@@ -8,13 +8,13 @@ import sys
 sys.path.append("../")
 
 from uncertimators.base_uncertimator import uncertimator
-from MCMC_Adam import MCMC_by_bp
+from MALA import MCMC_by_bp
 from datasets.samplers import Bernoulli_batch_sampler, naive_Bernoulli_Dataloader
 from util.loss_util import L2_Bern_loss_corrected
 
-class MCMC_Adam_uncertimator(uncertimator):
+class MALA_uncertimator(uncertimator):
     '''
-    Class to run all the MCMC-Adam code for all uncertainty estimation methods
+    Class to run all the MALA code 
     '''
 
     def __init__(self, model, loss, data, device, loss_full = None, loss_train = None, loss_val = None):
@@ -34,7 +34,7 @@ class MCMC_Adam_uncertimator(uncertimator):
 
     def run(self, epochs, start, **kwargs):
         '''
-        Loop for the MCMC_Adam algorithm
+        Loop for the MALA algorithm
         
         args:   epochs - INT: Number of repetitions over the train_dataloader
                 start - bool: Start new optimization or reuse old optimzers & schedulers

@@ -10,7 +10,7 @@ from util.loss_util import L2_Bern_loss, L2_Bern_loss_corrected
 from util.model_util import RegressionNet
 from datasets.toy import load_1d, RegressionData
 from datasets.samplers import naive_Bernoulli_Dataloader
-from uncertimators.MCMC_Adam_unc import MCMC_Adam_uncertimator
+from uncertimators.MALA_unc import MALA_uncertimator
 from uncertimators.non_bayes_unc import non_bayes_uncertimator
 
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
@@ -85,7 +85,7 @@ MCMC_dict = {'full_loss': True,
 }
 
 warm_up_unc = non_bayes_uncertimator(net, loss, data, device)
-uncert_MHgd = MCMC_Adam_uncertimator(net, loss, data, device)
+uncert_MHgd = MALA_uncertimator(net, loss, data, device)
 
 warm_up_unc.train(n_warm_up_adam, {'opt': torch.optim.SGD(net.parameters(), lr = 1e-3)})
 uncert_MHgd.warm_up(n_warm_up, **MCMC_dict)
@@ -117,7 +117,7 @@ MCMC_dict = {'full_loss': False,
 }
 
 warm_up_unc = non_bayes_uncertimator(net, loss, data, device)
-uncert_sMHgd = MCMC_Adam_uncertimator(net, loss, data, device)
+uncert_sMHgd = MALA_uncertimator(net, loss, data, device)
 
 warm_up_unc.train(n_warm_up_adam, {'opt': torch.optim.SGD(net.parameters(), lr = 1e-3)})
 uncert_sMHgd.warm_up(n_warm_up, **MCMC_dict)
@@ -154,7 +154,7 @@ loss_val = L2_Bern_loss(n_points, p, use_mean=False)#, n_points)
 net = RegressionNet(dim_in=1, dim_out=1, ndf=100, dropout=0, activation=torch.nn.ReLU, layers=3*[torch.nn.Linear], layer_kwargs=3*[{}], device=device).to(device)
 
 warm_up_unc = non_bayes_uncertimator(net, loss_train, data, device)
-uncert_sMHgd_corr = MCMC_Adam_uncertimator(net, loss, data, device, loss_full = loss_full, loss_train = loss_train, loss_val = loss_val)
+uncert_sMHgd_corr = MALA_uncertimator(net, loss, data, device, loss_full = loss_full, loss_train = loss_train, loss_val = loss_val)
 
 warm_up_unc.train(n_warm_up_adam, {'opt': torch.optim.SGD(net.parameters(), lr = 1e-3)})
 uncert_sMHgd_corr.warm_up(n_warm_up, **MCMC_dict)
