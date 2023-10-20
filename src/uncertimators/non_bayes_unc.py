@@ -9,10 +9,7 @@ from uncertimators.base_uncertimator import uncertimator
 
 class non_bayes_uncertimator(uncertimator):
     '''
-    Class to run bayes-by_backprob i.e. gaussian mean-field variational inference of the posterior.
-    This is based on heritage code from Heidelberg (util.VBLinear) or bayesian_torch.layers.flipout_layers.linear_flipout
-
-    FUTURE WORK: also use blitz (https://github.com/piEsposito/blitz-bayesian-deep-learning) and bayesian_torch
+    Class to run classical training
     '''
 
     def __init__(self, model, loss, data, device):
