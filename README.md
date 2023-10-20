@@ -1,6 +1,6 @@
 # csMALA
 
-This Repo contains the Numerics of our Paper "Statistical guarantees for stochastic Metropolis-Hastings" - http://arxiv.org/abs/2310.09335
+This Repo contains the Numerics of our Paper ...
 
 ## Structure
 
