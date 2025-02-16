@@ -64,7 +64,7 @@ class non_bayes_uncertimator(uncertimator):
                 if training_obj < -10000 or training_obj > 10000 and epoch != epochs[0]:
                     print(f'training obj {training_obj} overflow')
 
-                self.doc_dict['train_loss'].append(training_obj.detach().cpu().numpy())
+                self.doc_dict['train_loss'].append(training_obj.detach().cpu().item())
 
                 training_obj.backward()
                 self.optimizer.step()
@@ -80,7 +80,7 @@ class non_bayes_uncertimator(uncertimator):
                         val_loss = self.loss(self.model(d[0].detach().to(self.model.device).reshape(-1,1).float()), 
                                                 d[1].detach().to(self.model.device).reshape(-1,1).float())
                         val_losses.append(val_loss)
-                    self.doc_dict['val_loss'].append(torch.sum(torch.Tensor(val_losses)).detach().cpu().numpy())
+                    self.doc_dict['val_loss'].append(torch.sum(torch.Tensor(val_losses)).detach().cpu().item())
         self.model.eval()
 
     def warm_up(self, epochs, **kwargs):

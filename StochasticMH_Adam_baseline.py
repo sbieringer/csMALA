@@ -47,8 +47,6 @@ X_test = torch.cat((torch.linspace(-2,2,500).view(-1,1), torch.Tensor(X_test).vi
 data_tr = RegressionData(X, Y)
 data_val = RegressionData(X_val, Y_val)
 
-#bs_tr = Bernoulli_batch_sampler(p, len(data_tr))
-#dataloader_tr = torch.utils.data.DataLoader(data_tr, batch_sampler=bs_tr, num_workers=1, pin_memory=True, persistent_workers=True)
 dataloader_tr = naive_Bernoulli_Dataloader(data_tr, p)
 dataloader_val = torch.utils.data.DataLoader(data_val, batch_size=len(X_val),
                         shuffle=False, num_workers=1, pin_memory=True, persistent_workers=True)

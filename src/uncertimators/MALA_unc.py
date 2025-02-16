@@ -86,7 +86,7 @@ class MALA_uncertimator(uncertimator):
 
                 if extended_doc_dict:
                     training_obj = self.loss_train(self.model(x), y) #SLOW 
-                    self.doc_dict['train_loss'].append(training_obj.detach().cpu().numpy())
+                    self.doc_dict['train_loss'].append(training_obj.detach().cpu().item())
                     if training_obj < -10000 or training_obj > 10000 and epoch != epochs[0]:
                         print(f'training obj {training_obj} overflow')
                     
@@ -129,27 +129,27 @@ class MALA_uncertimator(uncertimator):
                         old_correction = (torch.log(self.data['train'].sampler.p[0])/self.kwargs['temperature'])*len(y)
                     new_correction = (torch.log(self.data['train'].sampler.p[0])/self.kwargs['temperature'])*len(y)
                     if extended_doc_dict:
-                        self.doc_dict['correction_diff'].append(self.kwargs['temperature']*(old_correction-new_correction).detach().cpu().numpy())
+                        self.doc_dict['correction_diff'].append(self.kwargs['temperature']*(old_correction-new_correction).detach().cpu().item())
                     old_correction = new_correction
                     if isinstance(self.loss, L2_Bern_loss_corrected) and extended_doc_dict:
                         if isinstance(self.loss.corr_factor, torch.Tensor):
-                            self.doc_dict['correction_factor'].append(dc(self.loss.corr_factor).detach().cpu().numpy())
+                            self.doc_dict['correction_factor'].append(dc(self.loss.corr_factor).detach().cpu().item())
                         else:
                             self.doc_dict['correction_factor'].append(self.loss.corr_factor)
                     if b:
                         self.doc_dict['batch_size_acc'].append(len(y))
                         self.last_accepted_batch = data_ep
-                self.doc_dict['acceptance_prob'].append(a.detach().cpu().numpy())
+                self.doc_dict['acceptance_prob'].append(a.detach().cpu().item())
                 self.doc_dict['accepted'].append(b)
                 if extended_doc_dict:
-                    self.doc_dict['sigma'].append(sigma.detach().cpu().numpy())
-                    self.doc_dict['step_over_sigma'].append(stop_dict['old_new_sqe'].detach().cpu().numpy()/sigma.detach().cpu().numpy())
-                    self.doc_dict['steplenght'].append(torch.sqrt(torch.sum((old_state - torch.nn.utils.parameters_to_vector(self.model.parameters()))**2)).detach().cpu().numpy())   
+                    self.doc_dict['sigma'].append(sigma.detach().cpu().item())
+                    self.doc_dict['step_over_sigma'].append(stop_dict['old_new_sqe'].detach().cpu().item()/sigma.detach().cpu().item())
+                    self.doc_dict['steplenght'].append(torch.sqrt(torch.sum((old_state - torch.nn.utils.parameters_to_vector(self.model.parameters()))**2)).detach().cpu().item())   
                     self.doc_dict['GPU_allocated'].append(torch.cuda.memory_allocated(self.device))
                     self.doc_dict['memory_allocated'].append(virtual_memory()[2])
                 for key in stop_dict.keys():
                     try:
-                        self.doc_dict[key].append(stop_dict[key].detach().cpu().numpy())
+                        self.doc_dict[key].append(stop_dict[key].detach().cpu().item())
                     except:
                         self.doc_dict[key].append(stop_dict[key])
 
@@ -173,7 +173,7 @@ class MALA_uncertimator(uncertimator):
                         val_loss = self.loss_val(self.model(d[0].detach().to(self.model.device).reshape(-1,1).float()), 
                                                 d[1].detach().to(self.model.device).reshape(-1,1).float())
                         val_losses.append(val_loss)
-                    self.doc_dict['val_loss'].append(torch.sum(torch.Tensor(val_losses)).detach().cpu().numpy())
+                    self.doc_dict['val_loss'].append(torch.sum(torch.Tensor(val_losses)).detach().cpu().item())
         self.model.eval()
         print("    ", end='\r')
 

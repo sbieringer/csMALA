@@ -53,8 +53,6 @@ X_test = torch.cat((torch.linspace(-2,2,500).view(-1,1), torch.Tensor(X_test).vi
 data_tr = RegressionData(X, Y)
 data_val = RegressionData(X_val, Y_val)
 
-#bs_tr = Bernoulli_batch_sampler(p, len(data_tr))
-#dataloader_tr = torch.utils.data.DataLoader(data_tr, batch_sampler=bs_tr, num_workers=1, pin_memory=True, persistent_workers=True)
 dataloader_tr = naive_Bernoulli_Dataloader(data_tr, p)
 dataloader_val = torch.utils.data.DataLoader(data_val, batch_size=len(X_val),
                         shuffle=False, num_workers=1, pin_memory=True, persistent_workers=True)
@@ -69,16 +67,16 @@ net = RegressionNet(dim_in=1, dim_out=1, ndf=100, dropout=0, activation=torch.nn
 
 MCMC_dict = {'full_loss': True,
              'MH': True, #this is a little more than x2 runtime
-             'sigma': 0.2, #'dynamic' is a stupid idea because of the extra chi^2-distribution in the acc prob
-             'sigma_factor': 1, #step_over_sigma seems to be the important metric, should be around 2, this will not be decayed
+             'sigma': 0.2, 
+             'sigma_factor': 1, 
              #'sigma_min': 0.2,
              'lr_start': 1e-4, 
-             #'min_lr': 1e-6, #5e-6,
+             #'min_lr': 1e-6,
              'temperature': n_points*p*lambda_factor,
              'verbose': False,
-             'sigma_adam_dir': None, #not sure this helps
+             'sigma_adam_dir': None, 
              #'tau': 0.9,
-             'opt': 'SGD', #this is a little more than x2 runtime
+             'opt': 'SGD',
              #'gamma_scheduler': 0.9999,
              #'gamma_sigma_decay': 'constant',
              'extended_doc_dict': False
@@ -101,16 +99,16 @@ net = RegressionNet(dim_in=1, dim_out=1, ndf=100, dropout=0, activation=torch.nn
 
 MCMC_dict = {'full_loss': False,
              'MH': True, #this is a little more than x2 runtime
-             'sigma': 0.2, #'dynamic' is a stupid idea because of the extra chi^2-distribution in the acc prob
-             'sigma_factor': 1, #step_over_sigma seems to be the important metric, should be around 2, this will not be decayed
+             'sigma': 0.2, 
+             'sigma_factor': 1, 
              #'sigma_min': 0.2,
              'lr_start': 1e-4, 
-             #'min_lr': 1e-6, #5e-6,
+             #'min_lr': 1e-6, 
              'temperature': n_points*p*lambda_factor,
              'verbose': False,
-             'sigma_adam_dir': None, #not sure this helps
+             'sigma_adam_dir': None, 
              #'tau': 0.9,
-             'opt': 'SGD', #this is a little more than x2 runtime
+             'opt': 'SGD', 
              #'gamma_scheduler': 0.9999,
              #'gamma_sigma_decay': 'constant',
              'extended_doc_dict': False
@@ -129,16 +127,16 @@ uncert_sMHgd.get_samples(X_test.to(device), m, c, save_path = folder +'/sMHgd/sa
 
 MCMC_dict = {'full_loss': False,
              'MH': True, #this is a little more than x2 runtime
-             'sigma': 0.2, #'dynamic' is a stupid idea because of the extra chi^2-distribution in the acc prob
-             'sigma_factor': 1, #step_over_sigma seems to be the important metric, should be around 2, this will not be decayed
+             'sigma': 0.2, 
+             'sigma_factor': 1, 
              'sigma_min': 0.2,
              'lr_start': 1e-4 * 1/p, 
-             #'min_lr': 1e-6, #5e-6,
+             #'min_lr': 1e-6,
              'temperature': n_points*lambda_factor*(2-p),
              'verbose': False,
-             'sigma_adam_dir': None, #not sure this helps
+             'sigma_adam_dir': None, 
              #'tau': 0.9,
-             'opt': 'SGD', #this is a little more than x2 runtime
+             'opt': 'SGD',
              #'gamma_scheduler': 0.9999,
              #'gamma_sigma_decay': 'constant',
              'extended_doc_dict': False
@@ -146,8 +144,8 @@ MCMC_dict = {'full_loss': False,
 }
 
 data = {'train': dataloader_tr, 'val': dataloader_val}
-loss = L2_Bern_loss_corrected(n_points, p, MCMC_dict['temperature'], use_mean=False, k= 'run_avg') #-0.5*MCMC_dict['temperature']/(n_points*np.log(p)))
-loss_full = L2_Bern_loss_corrected(n_points, p, MCMC_dict['temperature'], use_mean=False, k= 'run_avg') #-0.5*MCMC_dict['temperature']/(n_points*np.log(p)))
+loss = L2_Bern_loss_corrected(n_points, p, MCMC_dict['temperature'], use_mean=False, k= 'run_avg') 
+loss_full = L2_Bern_loss_corrected(n_points, p, MCMC_dict['temperature'], use_mean=False, k= 'run_avg')
 loss_train = L2_Bern_loss(n_points, p, use_mean=False)#, n_points)
 loss_val = L2_Bern_loss(n_points, p, use_mean=False)#, n_points)
 
