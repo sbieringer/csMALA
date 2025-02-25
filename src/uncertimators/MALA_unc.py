@@ -3,6 +3,7 @@ import numpy as np
 from copy import deepcopy as dc
 from time import time
 from psutil import virtual_memory
+from collections.abc import Iterable
 
 import sys
 sys.path.append("../")
@@ -68,7 +69,8 @@ class MALA_uncertimator(uncertimator):
         verbose = kwargs.get('verbose', False)
         b, sigma_fact = False, dc(kwargs['sigma_factor'])
         
-        epochs = range(epochs) if isinstance(epochs, int) else range(*epochs)
+        if not isinstance(epochs, Iterable):
+            epochs = range(int(epochs))
         maxed_out_mbb_batches  = 0
         for epoch in epochs:
             if verbose:

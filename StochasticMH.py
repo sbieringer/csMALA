@@ -18,11 +18,12 @@ if torch.cuda.is_available():
     print(torch.cuda.get_device_name(0))
 
 parser = ArgumentParser()
-parser.add_argument('--folder', type=str)
-parser.add_argument('--n_points', type=int)
-parser.add_argument('--rho', type=float)
+parser.add_argument('--folder', type=str, default="sigma_data_002/n10000/lambda1/rho0.1/0/")
+parser.add_argument('--n_points', type=int, default=10000)
+parser.add_argument('--rho', type=float, default=0.1)
 parser.add_argument('--lambda_factor', type=float, default=1)
-parser.add_argument('--sigma_data', type=float, default=0.25)
+parser.add_argument('--sigma_data', type=float, default=0.02)
+parser.add_argument('--num_dataloader_workers', type=int, default=0)
 
 runargs = parser.parse_args()
 
@@ -54,12 +55,18 @@ data_tr = RegressionData(X, Y)
 data_val = RegressionData(X_val, Y_val)
 
 dataloader_tr = naive_Bernoulli_Dataloader(data_tr, p)
-dataloader_val = torch.utils.data.DataLoader(data_val, batch_size=len(X_val),
-                        shuffle=False, num_workers=1, pin_memory=True, persistent_workers=True)
+if runargs.num_dataloader_workers == 0:
+    dataloader_val = torch.utils.data.DataLoader(data_val, batch_size=len(X_val),
+                        shuffle=False, num_workers=0, pin_memory=True, persistent_workers=False)
+else:
+    dataloader_val = torch.utils.data.DataLoader(data_val, batch_size=len(X_val),
+                        shuffle=False, num_workers=runargs.num_dataloader_workers, pin_memory=True, persistent_workers=True)
 
 ##############
 ## full MH ###
 ##############
+
+print("Initializing running full MALA")
 
 data = {'train': dataloader_tr, 'val': dataloader_val}
 loss = L2_Bern_loss(n_points, p, use_mean=False)
@@ -69,16 +76,11 @@ MCMC_dict = {'full_loss': True,
              'MH': True, #this is a little more than x2 runtime
              'sigma': 0.2, 
              'sigma_factor': 1, 
-             #'sigma_min': 0.2,
              'lr_start': 1e-4, 
-             #'min_lr': 1e-6,
              'temperature': n_points*p*lambda_factor,
              'verbose': False,
              'sigma_adam_dir': None, 
-             #'tau': 0.9,
              'opt': 'SGD',
-             #'gamma_scheduler': 0.9999,
-             #'gamma_sigma_decay': 'constant',
              'extended_doc_dict': False
 }
 
@@ -93,6 +95,8 @@ uncert_MHgd.get_samples(X_test.to(device), m, c, save_path = folder +'/MHgd/samp
 ### stochastic MH ###
 #####################
 
+print("Initializing running stochastic MALA")
+
 data = {'train': dataloader_tr, 'val': dataloader_val}
 loss = L2_Bern_loss(n_points, p, use_mean=False)
 net = RegressionNet(dim_in=1, dim_out=1, ndf=100, dropout=0, activation=torch.nn.ReLU, layers=3*[torch.nn.Linear], layer_kwargs=3*[{}], device=device).to(device)
@@ -101,16 +105,11 @@ MCMC_dict = {'full_loss': False,
              'MH': True, #this is a little more than x2 runtime
              'sigma': 0.2, 
              'sigma_factor': 1, 
-             #'sigma_min': 0.2,
              'lr_start': 1e-4, 
-             #'min_lr': 1e-6, 
              'temperature': n_points*p*lambda_factor,
              'verbose': False,
              'sigma_adam_dir': None, 
-             #'tau': 0.9,
              'opt': 'SGD', 
-             #'gamma_scheduler': 0.9999,
-             #'gamma_sigma_decay': 'constant',
              'extended_doc_dict': False
 }
 
@@ -125,20 +124,17 @@ uncert_sMHgd.get_samples(X_test.to(device), m, c, save_path = folder +'/sMHgd/sa
 ### with correction and scaled lr and lambda 2 - \rho ###
 #########################################################
 
+print("Initializing running stochastic MALA with correction")
+
 MCMC_dict = {'full_loss': False,
              'MH': True, #this is a little more than x2 runtime
              'sigma': 0.2, 
              'sigma_factor': 1, 
-             'sigma_min': 0.2,
              'lr_start': 1e-4 * 1/p, 
-             #'min_lr': 1e-6,
              'temperature': n_points*lambda_factor*(2-p),
              'verbose': False,
              'sigma_adam_dir': None, 
-             #'tau': 0.9,
              'opt': 'SGD',
-             #'gamma_scheduler': 0.9999,
-             #'gamma_sigma_decay': 'constant',
              'extended_doc_dict': False
 
 }

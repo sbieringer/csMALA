@@ -15,11 +15,12 @@ device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
 
 parser = ArgumentParser()
-parser.add_argument('--folder', type=str)
-parser.add_argument('--n_points', type=int)
-parser.add_argument('--rho', type=float)
+parser.add_argument('--folder', type=str, default="sigma_data_002/n10000/lambda1/rho0.1/0/")
+parser.add_argument('--n_points', type=int, default=10000)
+parser.add_argument('--rho', type=float, default=0.1)
 parser.add_argument('--lambda_factor', type=float, default=1)
-parser.add_argument('--sigma_data', type=float, default=0.25)
+parser.add_argument('--sigma_data', type=float, default=0.02)
+parser.add_argument('--num_dataloader_workers', type=int, default=0)
 
 runargs = parser.parse_args()
 
@@ -48,9 +49,13 @@ data_tr = RegressionData(X, Y)
 data_val = RegressionData(X_val, Y_val)
 
 dataloader_tr = naive_Bernoulli_Dataloader(data_tr, p)
-dataloader_val = torch.utils.data.DataLoader(data_val, batch_size=len(X_val),
-                        shuffle=False, num_workers=1, pin_memory=True, persistent_workers=True)
-
+if runargs.num_dataloader_workers == 0:
+    dataloader_val = torch.utils.data.DataLoader(data_val, batch_size=len(X_val),
+                        shuffle=False, num_workers=0, pin_memory=True, persistent_workers=False)
+else:
+    dataloader_val = torch.utils.data.DataLoader(data_val, batch_size=len(X_val),
+                        shuffle=False, num_workers=runargs.num_dataloader_workers, pin_memory=True, persistent_workers=True)
+    
 data = {'train': dataloader_tr, 'val': dataloader_val}
 loss = L2_Bern_loss(n_points, p, use_mean=False)
 net = RegressionNet(dim_in=1, dim_out=1, ndf=100, dropout=0, activation=torch.nn.ReLU, layers=3*[torch.nn.Linear], layer_kwargs=3*[{}], device=device).to(device)
