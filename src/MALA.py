@@ -3,31 +3,6 @@ from copy import deepcopy as dc
 from numpy import pi, sqrt
 from time import time
 
-# def test_states_equal(state1, state2, **kwargs):
-#     tmp = []
-#     verbose = kwargs.get('verbose', False)
-#     for key in state1[0].keys():
-#         tmp.append(torch.equal(state1[0][key], state2[0][key]))
-#         if verbose:
-#             print(key, torch.equal(state1[0][key], state2[0][key]))
-#     for key in state1[1].keys():
-#         try:
-#             for k2 in state1[1][key].keys():
-#                 for k3 in state1[1][key][k2].keys():
-#                     try:
-#                         tmp.append(torch.equal(state1[1][key][k2][k3], state2[1][key][k2][k3]))
-#                         if verbose:
-#                             print(key, k2, k3, torch.equal(state1[1][key][k2][k3], state2[1][key][k2][k3]))
-#                     except:
-#                         tmp.append(state1[1][key][k2][k3] == state2[1][key][k2][k3])
-#                         if verbose:
-#                             print(key, k2, k3, state1[1][key][k2][k3] == state2[1][key][k2][k3])
-#         except:
-#             tmp.append(prop_state[1][key] == self.get_params()[1][key])
-#             if verbose:
-#                 print(key, prop_state[1][key] == self.get_params()[1][key])
-#     return all(tmp)
-
 def diff(params1, params2):
     diff = params1[0] - params2[0]
     return diff.detach()
@@ -55,14 +30,12 @@ def accept_prop(temp, old_loss, prop_loss, old_state, new_state, prop_state, nex
     
     len2_diff_old, len2_diff_prop = torch.sum(diff_old**2), torch.sum(diff_prop**2)
     len2_diff_old_adam = torch.sum(diff_old_adam**2)if sigma_adam_dir is not None else None  
-    len2_diff_prop_adam = torch.sum(diff_prop_adam**2) if sigma_adam_dir is not None else None #SHOULDNT THE SECOND ONE BE THE SAME AS THE FIRST? AT LEAST AS AN OPTION? NO IT SHOULDNT --> IF IT DOES NOT WORK USE LARGE MOMENTUM WITH ADAM
+    len2_diff_prop_adam = torch.sum(diff_prop_adam**2) if sigma_adam_dir is not None else None
     
-    prop_prob_old = log_normal(diff_old, len2_diff_old, sigma_next, diff_prop_adam, len2_diff_old_adam, sigma_adam_dir_next, verbose) #we change the direction of the adam opt here !!!
+    prop_prob_old = log_normal(diff_old, len2_diff_old, sigma_next, diff_prop_adam, len2_diff_old_adam, sigma_adam_dir_next, verbose) 
     prop_prob_prop = log_normal(diff_prop, len2_diff_prop, sigma, diff_old_adam, len2_diff_prop_adam, sigma_adam_dir, verbose)
     
-    #log_norms = log_normalization_factor(sigma, sigma_next, len(diff_old), diff_old_adam, len2_diff_old_adam, diff_prop_adam, len2_diff_prop_adam, sigma_adam_dir, sigma_adam_dir_next)
-    
-    val = torch.exp(temp*(old_loss-prop_loss) + prop_prob_old - prop_prob_prop)# + log_norms)
+    val = torch.exp(temp*(old_loss-prop_loss) + prop_prob_old - prop_prob_prop)
 
     val_ret = torch.nan_to_num(val, 0, posinf = 1, neginf = 0)
     val_ret = torch.Tensor([1]).to(val_ret.device) if val_ret>1e6 else val_ret
@@ -113,7 +86,7 @@ class MCMC_by_bp():
         notes: at some point one might use the torch.distributions.normal.Normal 
         '''
         
-        fixed_batches = kwargs.get('fixed_batches', False) #fixed batches needs to be set (in theory) when MCMC-Adam is used with batched data (i.e. not Bernoulli-sampled batches) 
+        fixed_batches = kwargs.get('fixed_batches', False) #fixed batches needs to be set when MCMC-Adam is used with batched data (i.e. not Bernoulli-sampled batches) 
         verbose = kwargs.get('verbose', False)
         use_full_loss = hasattr(kwargs.get('full_loss', False), '__call__')
         extended_doc_dict = kwargs.get('extended_doc_dict', True)
@@ -151,7 +124,7 @@ class MCMC_by_bp():
 
             #contruct the proposed state by sampling from a normal distribution centered at the grad-descend update 
             #if we wanted wanted to implement different param_groups, we would need to do this here
-            self.old_new_sqe = torch.sqrt(torch.sum(diff(self.old_state, self.new_state)**2)) # moves this into the option in final version
+            self.old_new_sqe = torch.sqrt(torch.sum(diff(self.old_state, self.new_state)**2))
 
         if extended_doc_dict:
             doc_dict['old_new_sqe'] = self.old_new_sqe
@@ -167,9 +140,8 @@ class MCMC_by_bp():
         else:
             raise Exception('Please either specify a sigma or use a optimizer with a .lr attribute')
             
-        sigma_norm_factor = torch.sqrt(1/(self.n_weights)) #torch.sqrt(pi/(self.n_weights*2))
+        sigma_norm_factor = torch.sqrt(1/(self.n_weights)) 
         sigma *= sigma_norm_factor*kwargs.get('sigma_factor', 0.99)
-        #sigma = torch.Tensor([1e-10]).to(self.model.device) if sigma < 1e-10 else sigma #RERUN AND TRY
         
         sigma_adam_dir = kwargs.get('sigma_adam_dir')
         sigma_adam_dir = torch.Tensor([sigma_adam_dir]).to(self.model.device)*sigma_norm_factor if sigma_adam_dir is not None else sigma_adam_dir
@@ -189,7 +161,7 @@ class MCMC_by_bp():
             self.opt.zero_grad()
             
             prop_loss = loss()
-            prop_loss.backward() #multiple steps --> future work
+            prop_loss.backward() 
 
             prop_loss_acc = kwargs['full_loss'](self.model) if use_full_loss else prop_loss
             
@@ -199,7 +171,6 @@ class MCMC_by_bp():
             prop_next_sqe = torch.sqrt(torch.sum(diff(prop_state, next_state)**2))
             sigma_next = prop_next_sqe**kwargs.get('tau', 1)*sigma_norm_factor*kwargs.get('sigma_factor', 0.99) if self.sigma == 'dynamic' else sigma
 
-            #a, a_full, doc_dict['prob_diff'], doc_dict['diff_diff'] =       
             a, a_full,prob_diff_doc ,_ = accept_prop(self.temp, self.old_loss_acc, prop_loss_acc, self.old_state, self.new_state, 
                                                                                   prop_state, next_state, sigma, sigma_next, sigma_adam_dir = sigma_adam_dir, 
                                                                                   sigma_adam_dir_next = sigma_adam_dir, verbose = verbose) 
@@ -218,7 +189,7 @@ class MCMC_by_bp():
                 self.old_state = prop_state 
 
                 if not fixed_batches:
-                    self.new_state = next_state #there is something fishy here, is this in line with the paper?
+                    self.new_state = next_state 
                     self.old_new_sqe = prop_next_sqe
                     self.old_loss_acc = prop_loss_acc
 
@@ -240,12 +211,10 @@ class MCMC_by_bp():
 
     def set_params(self, out):
         torch.nn.utils.vector_to_parameters(out[0], self.model.parameters())
-        self.opt.load_state_dict(out[1]) #this we prob not need to do during loss_state()
+        self.opt.load_state_dict(out[1])
             
     def print_lr(self):
-        #if hasattr(self.opt, 'print_lr'):
-        #    return self.opt.print_lr()
-        #else:
+
         return self.opt.param_groups[0]['lr']
         
     def zero_grad(self):
