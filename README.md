@@ -6,7 +6,7 @@ This includes an implementation of a stochastic Metropolis Adjusted Langevin Alg
 <img src="./src/figs_rm/fit.png" alt="Regression example" />
 
 
-For a simple 1D Regression example $\mathcal{D}_n = (x_i,y_i)_{i\in 1,...,n}$, we use a $L_2$-loss 
+For a simple 1D Regression example $`\mathcal{D}_n=(x_i,y_i)_{i\in 1,...,n}`$, we use a $L_2$-loss 
 
 ```math
   L_n(\vartheta, B) = L(\vartheta, B; \mathcal{D}_n) := \frac{1}{n\rho}\sum_{i=1}^n b_i \underbrace{(y_i - f_\vartheta(x_i))^2}_{=: l_i(\vartheta)}
