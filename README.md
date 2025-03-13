@@ -1,6 +1,6 @@
 # csMALA
 
-This Repo contains the Numerics of our Paper ["Statistical guarantees for stochastic Metropolis-Hastings"](https://arxiv.org/abs/2310.09335). 
+This Repo contains the Numerics of our paper ["Statistical guarantees for stochastic Metropolis-Hastings"](https://arxiv.org/abs/2310.09335). 
 This includes an implementation of a stochastic Metropolis Adjusted Langevin Algorithm (MALA) drawing auxiliary variables from a Bernoulli distribution $b_i \sim \mathrm{Ber}(\rho)$ for some $\rho\in (0,1]$ to construct batches of data.
 
 <img src="./src/figs_rm/fit.png" alt="Regression example" />
