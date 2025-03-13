@@ -58,7 +58,6 @@ For more details, we refer to the [paper](https://arxiv.org/abs/2310.09335)
   primaryClass = "stat.ML",
   month={10},
   year={2023},
-  keywords = {bieringer},
 }.
 ```
 
