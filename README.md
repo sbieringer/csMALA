@@ -7,16 +7,19 @@ This includes an implementation of a stochastic Metropolis Adjusted Langevin Alg
 
 
 For a simple 1D Regression example $\mathcal{D}_n = (x_i,y_i)_{i\in 1,...,n}$, we use a $L_2$-loss 
-$$
+
+```math
   L_n(\vartheta, B) = L(\vartheta, B; \mathcal{D}_n) := \frac{1}{n\rho}\sum_{i=1}^n b_i \underbrace{(y_i - f_\vartheta(x_i))^2}_{=: l_i(\vartheta)}
-$$
+```
 at function parameters $\vartheta$.
 In combination with established MALA, this leads to sampling from a surrogate distribution, which only resembles the true posterior well for large $\rho$ and $n$.
 
 We propose adapting the loss to 
-$$
+
+```math
   \tilde{L}_n(\vartheta, B) := \frac{1}{n}\sum_{i=1}^n b_i l_i(\vartheta) + \zeta \frac{\log{\rho}}{\lambda} \sum_{i=1}^n b_i\,,
-$$
+```
+
 which ensures sampling from a marginal invariant distribution with reduced inverse temperature of $\frac{\lambda}{1-\rho}$ for small $\frac{\lambda}{n}$ compared to the true posterior. The convergence of the resulting algorithm in Kullback-Leibner-Divergence does no longer depent on the batchsize $\rho$ and resembles that of full data MALA.
 
 <div style="text-align: center;">
